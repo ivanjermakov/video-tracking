@@ -1,4 +1,12 @@
 import cv2
+import numpy as np
+
+
+def showAsImage(frame, resizeRate=(1, 1)):
+	frame = frame.astype(np.uint8)
+	frame = cv2.resize(frame, (0, 0), fx=resizeRate[0], fy=resizeRate[1])
+	cv2.imshow('frame', frame)
+	cv2.waitKey(0)
 
 
 class VideoProcessor:
@@ -11,13 +19,13 @@ class VideoProcessor:
 		self.waitForMouseClick = False
 		self.frames = []
 
-	def render(self, show=True):
+	def render(self, show=True, resizeRate=(1, 1)):
 		cap = cv2.VideoCapture(self._DEFAULT_VIDEO_FOLDER + self.path)
 		while cap.isOpened():
 			ret, frame = cap.read()
 			if not ret:
 				break
-			# frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+			frame = cv2.resize(frame, (0, 0), fx=resizeRate[0], fy=resizeRate[1])
 			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 			self.frames.append(frame)
 			if show:
@@ -38,11 +46,9 @@ class VideoProcessor:
 		while self.waitForMouseClick:
 			cv2.imshow('select point', self.frames[frame])
 			cv2.waitKey(1)
-		cv2.destroyAllWindows()
 		return self.mousePos
 
 	def _mouseCallback(self, event, x, y, flags, param):
 		if event == cv2.EVENT_LBUTTONUP:
-			print('MOUSECLICK!')
 			self.mousePos = (x, y)
 			self.waitForMouseClick = False

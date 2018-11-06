@@ -7,4 +7,4 @@ processor.render(False)
 tracker = vt.VideoTracker(processor)
 print(tracker)
 
-print(processor.selectPoint())
+print(tracker.track(processor.selectPoint(), (100, 100)))
