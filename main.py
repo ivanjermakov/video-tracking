@@ -1,6 +1,10 @@
 import VideoProcessor as vp
-import VideoTracker
+import VideoTracker as vt
 
-vp = vp.VideoProcessor('test.mp4')
-vp.render()
-print(vp)
+processor = vp.VideoProcessor('test.mp4')
+processor.render(False)
+
+tracker = vt.VideoTracker(processor)
+print(tracker)
+
+print(processor.selectPoint())
