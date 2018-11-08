@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 import VideoProcessor as vp
@@ -8,11 +10,12 @@ class VideoTracker:
 	def __init__(self, processor):
 		self.processor = processor
 
-	def track(self, point, frameSize, frame=0):
+	def track(self, point, boxSize, targetSize, frame=0):
 		currFrame = self.processor.frames[frame]
-		borders = np.array([[point[1] - (frameSize[1] // 2), point[1] + (frameSize[1] // 2)],
-		                    [point[0] - (frameSize[0] // 2), point[0] + (frameSize[0] // 2)]])
-		subFrame = self._getSubFrame(currFrame, borders)
+		boxBorders = np.array([[point[1] - (boxSize[1] // 2), point[1] + (boxSize[1] // 2)],
+		                       [point[0] - (boxSize[0] // 2), point[0] + (boxSize[0] // 2)]])
+		subFrame = self._getSubFrame(currFrame, boxBorders)
+		importanceMask = self._generateImportanceMask(boxSize, targetSize)
 		vp.showAsImage(subFrame, resizeRate=(4, 4))
 		pass
 
@@ -52,3 +55,42 @@ class VideoTracker:
 			))
 
 		return sub
+
+	def _generateImportanceMask(self, boxSize, targetSize):
+		m = boxSize[0]
+		n = boxSize[1]
+		p = targetSize[0]
+		k = targetSize[1]
+
+		mask = np.zeros((m, n))
+
+		for a in range(m):
+			for b in range(n):
+				mask[a][b] = self._getGradientValue(a, b, m, n, p, k)
+
+		print(mask)
+		# mask = np.fromfunction(lambda a, b: self._getGradientValue(a, b, m, n, p, k), (m, n))
+		return mask
+
+	def _getGradientValue(self, a, b, m, n, p, k):
+		r = math.hypot(m / 2, n / 2)
+
+		a += 0.5
+		b += 0.5
+
+		# TODO: find out a better solution
+		# else case to avoid division by zero
+		q = abs((m / 2) - a) if m / 2 != a else 0.01
+		z = abs((n / 2) - b) if n / 2 != b else 0.01
+
+		isHorizontalC = (q / z) > (p / k)
+		c = p / 2 if isHorizontalC else k / 2
+
+		r0 = math.hypot(q, z)
+
+		l = (c * r0) / (q if isHorizontalC else z)
+
+		dr = r0 - l
+		v = 1 - (dr / r)
+
+		return v if v < 1 else 1

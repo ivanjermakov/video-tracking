@@ -15,12 +15,17 @@ class VideoProcessor:
 		self._DEFAULT_VIDEO_FOLDER = 'video/'
 
 		self.path = path
+
 		self.mousePos = (0, 0)
 		self.waitForMouseClick = False
+
 		self.frames = []
+
+		self.resolution = None
 
 	def render(self, show=True, resizeRate=(1, 1)):
 		cap = cv2.VideoCapture(self._DEFAULT_VIDEO_FOLDER + self.path)
+		self.resolution = (cap.get(3), cap.get(4))
 		while cap.isOpened():
 			ret, frame = cap.read()
 			if not ret:
