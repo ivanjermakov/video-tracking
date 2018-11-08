@@ -5,6 +5,7 @@ processor = vp.VideoProcessor('test.mp4')
 processor.render(False)
 
 tracker = vt.VideoTracker(processor)
-print(tracker)
 
-print(tracker.track(processor.selectPoint(), (5, 5), (1, 1)))
+tracker.track(processor.selectPoint(), (40, 40), (40, 40))
+# tracker.track((435, 994), (50, 50), (10, 10), startFrame=100)
+tracker.showTracked()

@@ -51,9 +51,36 @@ class VideoProcessor:
 		while self.waitForMouseClick:
 			cv2.imshow('select point', self.frames[frame])
 			cv2.waitKey(1)
+		cv2.destroyAllWindows()
 		return self.mousePos
+
+	def showTracked(self, trackedPoints, resizeRate=(1, 1), startFrame=0):
+		cap = cv2.VideoCapture(self._DEFAULT_VIDEO_FOLDER + self.path)
+		currentFrame = 0
+		for i in range(startFrame):
+			cap.read()
+		while cap.isOpened():
+			ret, frame = cap.read()
+			if not ret or \
+					currentFrame > int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) - 1 or \
+					currentFrame > trackedPoints.__len__() - 1:
+				break
+			frame = cv2.resize(frame, (0, 0), fx=resizeRate[0], fy=resizeRate[1])
+			# frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			trackedPoint = trackedPoints[currentFrame]
+			cv2.circle(frame, (trackedPoint[1], trackedPoint[0]), 4, (255, 0), -1)
+			cv2.imshow('video', frame)
+			while True:
+				key = cv2.waitKeyEx(0)
+				if key == 2555904:
+					break
+				if key & 0xFF == ord('q'):
+					exit(-1)
+			currentFrame += 1
+		cap.release()
+		cv2.destroyAllWindows()
 
 	def _mouseCallback(self, event, x, y, flags, param):
 		if event == cv2.EVENT_LBUTTONUP:
-			self.mousePos = (x, y)
+			self.mousePos = (y, x)
 			self.waitForMouseClick = False
