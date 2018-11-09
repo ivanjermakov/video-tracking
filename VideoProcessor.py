@@ -31,7 +31,7 @@ class VideoProcessor:
 			if not ret:
 				break
 			frame = cv2.resize(frame, (0, 0), fx=resizeRate[0], fy=resizeRate[1])
-			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+			# frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 			self.frames.append(frame)
 			if show:
 				cv2.imshow('video', frame)
@@ -54,7 +54,7 @@ class VideoProcessor:
 		cv2.destroyAllWindows()
 		return self.mousePos
 
-	def showTracked(self, trackedPoints, resizeRate=(1, 1), startFrame=0):
+	def showTracked(self, trackedPoints, boxSize, resizeRate=(1, 1), startFrame=0):
 		cap = cv2.VideoCapture(self._DEFAULT_VIDEO_FOLDER + self.path)
 		currentFrame = 0
 		for i in range(startFrame):
@@ -68,7 +68,9 @@ class VideoProcessor:
 			frame = cv2.resize(frame, (0, 0), fx=resizeRate[0], fy=resizeRate[1])
 			# frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 			trackedPoint = trackedPoints[currentFrame]
-			cv2.circle(frame, (trackedPoint[1], trackedPoint[0]), 4, (255, 0), -1)
+			# cv2.circle(frame, (trackedPoint[1], trackedPoint[0]), 4, (255, 0), -1)
+			cv2.rectangle(frame, (trackedPoint[1] - boxSize[1] // 2, trackedPoint[0] - boxSize[0] // 2),
+			              (trackedPoint[1] + boxSize[1] // 2, trackedPoint[0] + boxSize[0] // 2), (0, 0, 255), 2)
 			cv2.imshow('video', frame)
 			while True:
 				key = cv2.waitKeyEx(0)

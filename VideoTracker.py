@@ -12,10 +12,12 @@ class VideoTracker:
 		self.importanceMask = None
 		self.trackPoints = []
 		self.startFrame = 0
+		self.boxSize = None
 
 	def track(self, point, boxSize, targetSize, startFrame=0):
 		self.startFrame = startFrame if startFrame else 0
 		self.importanceMask = self._generateImportanceMask(boxSize, targetSize)
+		self.boxSize = boxSize
 		prevFrame = self.processor.frames[startFrame]
 		currFrame = self.processor.frames[startFrame]
 		for frame in range(startFrame, self.processor.frames.__len__() - 1):
@@ -26,7 +28,7 @@ class VideoTracker:
 			currFrame = self.processor.frames[frame + 1]
 
 	def showTracked(self):
-		self.processor.showTracked(self.trackPoints, startFrame=self.startFrame)
+		self.processor.showTracked(self.trackPoints, self.boxSize, startFrame=self.startFrame)
 
 	def _getSubFrame(self, frame, point, boxSize):
 		# TODO: find out the way to keep tracking with point out of bounds
@@ -51,26 +53,26 @@ class VideoTracker:
 		# fix top side
 		if borders[0][0] < 0:
 			sub = np.vstack((
-				np.full((-borders[0][0], sub.shape[1]), fillValue),
+				np.full((-borders[0][0], sub.shape[1], sub.shape[2]), fillValue),
 				sub
 			))
 		# fix bottom side
 		if borders[0][1] > h:
 			sub = np.vstack((
 				sub,
-				np.full((borders[0][1] - h, sub.shape[1]), fillValue)
+				np.full((borders[0][1] - h, sub.shape[1], sub.shape[2]), fillValue)
 			))
 		# fix left side
 		if borders[1][0] < 0:
 			sub = np.hstack((
-				np.full((sub.shape[0], -borders[1][0]), fillValue),
+				np.full((sub.shape[0], -borders[1][0], sub.shape[2]), fillValue),
 				sub
 			))
 		# fix right side
 		if borders[1][1] > w:
 			sub = np.hstack((
 				sub,
-				np.full((sub.shape[0], borders[1][1] - w), fillValue)
+				np.full((sub.shape[0], borders[1][1] - w, sub.shape[2]), fillValue)
 			))
 
 		return sub
@@ -126,6 +128,8 @@ class VideoTracker:
 				possibleSubFrames.append(self._getSubFrame(frame, (i, j), boxSize))
 
 		possibleSubFramesSimilarity = [1 - (abs(prevSubFrame - p) / 255) for p in possibleSubFrames]
+		# avg similarities from rgb
+		possibleSubFramesSimilarity = [np.array(s).mean(axis=2) for s in possibleSubFramesSimilarity]
 		# apply importance
 		possibleSubFramesSimilarity = list(map(lambda f: f * self.importanceMask, possibleSubFramesSimilarity))
 		meanSimilarities = [np.array(s).mean() for s in possibleSubFramesSimilarity]
