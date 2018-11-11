@@ -74,7 +74,7 @@ class VideoProcessor:
 			cv2.imshow('video', frame)
 			while True:
 				key = cv2.waitKeyEx(0)
-				if key == 2555904:
+				if key == 2555904 or key == 32:
 					break
 				if key & 0xFF == ord('q'):
 					exit(-1)
